@@ -51,8 +51,8 @@ pole <- setdiff(pole, dropSet)
 # 計算每個縣市鄉鎮區各有哪些種類、各幾支的電桿
 # 這邊我只有做到「鄉鎮區」，建議可以再進一步細做「村里」的部分
 pole_type <- group_by(pole, 縣市行政區, 型式) %>% 
-             summarise(n = n()) %>% 
-             ungroup() 
+  summarise(n = n()) %>% 
+  ungroup() 
 pole_type <- pole_type[-1,]
 pole_type <- spread(pole_type, key = 縣市行政區, value = n, fill = 0)
 pole_type <- t(pole_type[,-1]) %>% as.data.frame()
@@ -79,9 +79,17 @@ family$site_id <- gsub(x = family$site_id, pattern = "　", replacement = "")
 names(family)[1] <- "縣市行政區"
 family$household_no <- as.character(family$household_no) %>% as.numeric()
 family <- group_by(family, 縣市行政區) %>% 
-          summarise(household = mean(household_no)) 
+  summarise(household = mean(household_no)) 
 train <- left_join(train, family, by = "縣市行政區")
-train$household[is.na(train$household) == TRUE] <- rep(134958, 183) #高雄市三民區有134958戶
+# 屏東縣霧臺鄉有1049戶
+train$household[train$縣市行政區 == "屏東縣霧臺鄉"] <- rep(1049, 6)
+# 雲林縣臺西鄉有8727戶
+train$household[train$縣市行政區 == "雲林縣臺西鄉"] <- rep(8727, 15)
+# 高雄市三民區有134958戶
+train$household[train$縣市行政區 == "高雄市三民區"] <- rep(134958, 86)
+# 高雄市鳳山區有134958戶
+train$household[train$縣市行政區 == "高雄市鳳山區"] <- rep(138016, 76)
+
 submit <- left_join(submit, train[, c(3, 14:24)], by = "VilCode")
 
 # 將會用到的颱風資料先選出來
@@ -107,13 +115,13 @@ names(soudelor)[18:19] <- c("maxWind", "gust")
 names(megi)[16:17] <- c("maxWind", "gust")
 soudelor_rf <- randomForest(Soudelor~., data = soudelor[, -c(1:5)])
 soudelor_pred <- predict(soudelor_rf, newdata = megi[5:17])
-megi_pred <- 1.48*soudelor_pred
+megi_pred <- 1.45*soudelor_pred
 
 names(meranti)[18:19] <- c("maxWind", "gust")
 names(nesatAndHaitang)[16:17] <- c("maxWind", "gust")
 meranti_rf <- randomForest(MerantiAndMalakas~., data = meranti[, -c(1:5)])
 meranti_pred <- predict(meranti_rf, newdata = nesatAndHaitang[5:17])
-nesatAndHaitang_pred <- 1.45*meranti_pred
+nesatAndHaitang_pred <- 1.53*meranti_pred
 
 submit_dc <- cbind(submit[1:4], nesatAndHaitang_pred) %>% 
              cbind(megi_pred)
