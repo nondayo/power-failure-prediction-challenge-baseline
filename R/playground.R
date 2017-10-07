@@ -100,8 +100,7 @@ nesatAndHaitang <- select(submit, -c(5:6))
 
 # 加入特各颱風風力資料
 # 資料來源為颱風資料庫(http://rdc28.cwb.gov.tw/)
-library(xlsx)
-gust <- xlsx::read.xlsx("./data/gust.xlsx", 1)
+gust_csv <- read.csv("./data/gust.csv")
 names(gust)[1] <- "CityName"
 gust$CityName <- as.factor(gust$CityName)
 soudelor <- left_join(soudelor, gust[,c(1:3)], by = "CityName")

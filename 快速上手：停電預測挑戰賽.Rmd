@@ -196,8 +196,7 @@ submit <- left_join(submit, train[, c(3, 14:24)], by = "VilCode")
 ## 加入颱風風力資料
 讀取颱風風力資料，資料來源為[颱風資料庫](http://rdc28.cwb.gov.tw/)
 ```{r}
-library(xlsx)
-gust <- xlsx::read.xlsx("./data/gust.xlsx", 1)
+gust_csv <- read.csv("./data/gust.csv")
 names(gust)[1] <- "CityName"
 gust$CityName <- as.factor(gust$CityName)
 ```
